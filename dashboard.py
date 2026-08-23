@@ -9,23 +9,87 @@ from database import (
 def dashboard(username):
 
     # ==================================================
+    # GET HISTORY
+    # ==================================================
+
+    history = get_interview_history(username)
+    quiz_history = get_quiz_history(username)
+
+    # ==================================================
     # HEADER
     # ==================================================
 
     st.title("🎯 InterviewAce")
-    st.subheader(f"Welcome, {username}! 👋")
+
+    st.subheader(
+        f"Welcome back, {username}! 👋"
+    )
 
     st.caption(
-        "🤖 Your AI-powered interview preparation platform"
+        "🤖 AI-powered interview preparation platform"
     )
 
     st.markdown("---")
 
     # ==================================================
+    # OVERALL STATISTICS
+    # ==================================================
+
+    total_interviews = len(history)
+    total_quizzes = len(quiz_history)
+
+    interview_best = (
+        max([row[4] for row in history])
+        if history
+        else 0
+    )
+
+    quiz_best = (
+        max([row[4] for row in quiz_history])
+        if quiz_history
+        else 0
+    )
+
+    st.header("📊 Your Progress")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric(
+            "🎤 Interviews",
+            total_interviews
+        )
+
+    with col2:
+        st.metric(
+            "📚 Quizzes",
+            total_quizzes
+        )
+
+    with col3:
+        st.metric(
+            "🏆 Best Interview",
+            f"{interview_best:.1f}%"
+        )
+
+    with col4:
+        st.metric(
+            "🏆 Best Quiz",
+            f"{quiz_best:.1f}%"
+        )
+
+    # ==================================================
     # CAREER & DIFFICULTY
     # ==================================================
 
+    st.markdown("---")
+
     st.header("💼 Interview Preparation")
+
+    st.write(
+        "Choose your career path and difficulty level "
+        "to begin your preparation."
+    )
 
     career_options = [
         "Data Analyst",
@@ -41,7 +105,10 @@ def dashboard(username):
         "Advanced"
     ]
 
-    # Make sure session state exists
+    # ==================================================
+    # SESSION STATE
+    # ==================================================
+
     if "career" not in st.session_state:
         st.session_state.career = career_options[0]
 
@@ -75,8 +142,8 @@ def dashboard(username):
     st.session_state.career = career
     st.session_state.difficulty = difficulty
 
-    st.info(
-        f"🎯 Selected Path: **{career}** | "
+    st.success(
+        f"🎯 Selected Path: **{career}**  |  "
         f"📚 Level: **{difficulty}**"
     )
 
@@ -88,7 +155,14 @@ def dashboard(username):
 
     st.header("📄 Resume Analyzer")
 
-    # Initialize resume session state
+    st.write(
+        "Upload your resume to identify your skills "
+        "and areas that may need improvement."
+    )
+
+    # ==================================================
+    # RESUME SESSION STATE
+    # ==================================================
 
     if "resume_uploaded" not in st.session_state:
         st.session_state.resume_uploaded = False
@@ -105,7 +179,9 @@ def dashboard(username):
     if "resume_score" not in st.session_state:
         st.session_state.resume_score = 0
 
-    # Resume uploader
+    # ==================================================
+    # RESUME UPLOAD
+    # ==================================================
 
     uploaded_resume = st.file_uploader(
         "Upload Your Resume (TXT)",
@@ -140,8 +216,6 @@ def dashboard(username):
 
                 score = 0
 
-            # Save information
-
             st.session_state.resume_uploaded = True
             st.session_state.resume_text = resume_text
             st.session_state.found_skills = found_skills
@@ -155,7 +229,7 @@ def dashboard(username):
             )
 
     # ==================================================
-    # SHOW RESUME RESULTS
+    # RESUME RESULTS
     # ==================================================
 
     if st.session_state.resume_uploaded:
@@ -225,7 +299,7 @@ def dashboard(username):
 
     st.write(
         "Choose your career and difficulty above, "
-        "then select how you want to practice."
+        "then select a practice mode."
     )
 
     col1, col2 = st.columns(2)
@@ -234,14 +308,16 @@ def dashboard(username):
 
         st.info(
             "📚 **Quiz Practice**\n\n"
-            "Test your knowledge with career-based questions."
+            "Test your technical knowledge with "
+            "career-based questions."
         )
 
     with col2:
 
         st.info(
             "🎤 **Mock Interview**\n\n"
-            "Answer interview questions and receive feedback."
+            "Answer interview questions and receive "
+            "detailed feedback."
         )
 
     # ==================================================
@@ -254,13 +330,12 @@ def dashboard(username):
 
     col1, col2 = st.columns(2)
 
-    # ---------------- QUIZ ----------------
-
     with col1:
 
         if st.button(
             "📚 Start Quiz",
-            key="dashboard_start_quiz"
+            key="dashboard_start_quiz",
+            use_container_width=True
         ):
 
             st.session_state.career = career
@@ -269,13 +344,12 @@ def dashboard(username):
 
             st.rerun()
 
-    # ---------------- INTERVIEW ----------------
-
     with col2:
 
         if st.button(
             "🎤 Start Interview",
-            key="dashboard_start_interview"
+            key="dashboard_start_interview",
+            use_container_width=True
         ):
 
             st.session_state.career = career
@@ -291,8 +365,6 @@ def dashboard(username):
     st.markdown("---")
 
     st.header("🎤 Interview Progress")
-
-    history = get_interview_history(username)
 
     if history:
 
@@ -313,8 +385,6 @@ def dashboard(username):
         careers_practiced = len(
             set(row[0] for row in history)
         )
-
-        # ---------------- METRICS ----------------
 
         col1, col2, col3, col4 = st.columns(4)
 
@@ -346,7 +416,9 @@ def dashboard(username):
                 careers_practiced
             )
 
-        # ---------------- SCORE CHART ----------------
+        # ==================================================
+        # INTERVIEW CHART
+        # ==================================================
 
         st.subheader(
             "📈 Interview Score Progress"
@@ -371,7 +443,9 @@ def dashboard(username):
                 y="Score"
             )
 
-        # ---------------- DETAILED PROGRESS ----------------
+        # ==================================================
+        # INTERVIEW DETAILS
+        # ==================================================
 
         st.subheader(
             "📋 Detailed Interview Progress"
@@ -412,13 +486,9 @@ def dashboard(username):
 
     st.header("📚 Quiz Progress")
 
-    quiz_history = get_quiz_history(username)
-
     if quiz_history:
 
-        total_quizzes = len(
-            quiz_history
-        )
+        total_quizzes = len(quiz_history)
 
         quiz_percentages = [
             row[4]
@@ -433,8 +503,6 @@ def dashboard(username):
         best_quiz_score = max(
             quiz_percentages
         )
-
-        # ---------------- QUIZ METRICS ----------------
 
         col1, col2, col3 = st.columns(3)
 
@@ -459,7 +527,9 @@ def dashboard(username):
                 f"{best_quiz_score:.1f}%"
             )
 
-        # ---------------- QUIZ CHART ----------------
+        # ==================================================
+        # QUIZ CHART
+        # ==================================================
 
         st.subheader(
             "📈 Quiz Score Progress"
@@ -486,7 +556,9 @@ def dashboard(username):
                 y="Score"
             )
 
-        # ---------------- QUIZ HISTORY ----------------
+        # ==================================================
+        # QUIZ HISTORY
+        # ==================================================
 
         st.subheader(
             "📋 Quiz History"

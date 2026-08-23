@@ -2,6 +2,7 @@ import streamlit as st
 from question_bank import questions
 from ai_engine import evaluate_answer
 from pdf_report import create_report
+from database import save_interview_result
 
 
 def start_interview(career, difficulty):
@@ -276,6 +277,19 @@ def start_interview(career, difficulty):
             interview_data[
                 "finished"
             ] = True
+
+            # ==================================================
+            # SAVE INTERVIEW RESULT TO DATABASE
+            # ==================================================
+
+            save_interview_result(
+                st.session_state.username,
+                career,
+                difficulty,
+                total_score,
+                max_score,
+                final_percentage
+            )
 
             st.rerun()
 
